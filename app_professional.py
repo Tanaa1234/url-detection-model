@@ -13,7 +13,6 @@ import os
 import time
 from datetime import datetime
 from enhanced_classifier_v4 import EnhancedURLClassifier
-from data_preprocessing import URLFeatureExtractor
 import joblib
 
 # Professional Page Configuration
@@ -209,7 +208,7 @@ def get_detection_method_for_depth(model_name, analysis_depth):
     
     return f"{base_method} ({accuracy} accuracy)"
 
-def generate_model_specific_prediction(url, model_name, classifier, feature_extractor, analysis_depth="Enterprise Grade"):
+def generate_model_specific_prediction(url, model_name, classifier, analysis_depth="Enterprise Grade"):
     """Generate model-specific predictions with different characteristics"""
     
     # Get base Enhanced Classifier result
@@ -329,7 +328,7 @@ def generate_model_specific_prediction(url, model_name, classifier, feature_extr
             "threat_type": threat_type,
             "detection_method": get_detection_method_for_depth(model_name, analysis_depth)
         },
-        "url_features": extract_url_features_safe(url, feature_extractor)
+        "url_features": extract_url_features_safe(url, classifier)
     }
 
 def load_enhanced_classifier():
@@ -343,32 +342,65 @@ def load_enhanced_classifier():
         st.error(f"Error loading classifier: {e}")
         return None
 
-@st.cache_resource
-def load_feature_extractor():
-    """Load feature extractor"""
+def extract_url_features_safe(url, classifier):
+    """Safely extract URL features using the enhanced classifier"""
     try:
-        return URLFeatureExtractor()
-    except Exception as e:
-        st.warning(f"Feature extractor not available: {e}")
-        return None
-
-def extract_url_features_safe(url, feature_extractor):
-    """Safely extract URL features"""
-    try:
-        if feature_extractor:
-            return feature_extractor.extract_url_features(url)
+        if classifier:
+            # Get numerical features from classifier
+            features_list = classifier.extract_features(url)
+            
+            # Convert to named dictionary for UI display
+            if isinstance(features_list, list) and len(features_list) >= 13:
+                return {
+                    'url_length': int(features_list[0]),
+                    'domain_length': int(features_list[1]),
+                    'path_length': int(features_list[2]),
+                    'query_params': int(features_list[3]),
+                    'special_chars': int(features_list[4]),
+                    'digits_count': int(features_list[5]),
+                    'is_https': bool(features_list[6]),
+                    'suspicious_tld': bool(features_list[7]),
+                    'ip_address': bool(features_list[8]),
+                    'url_shortener': bool(features_list[9]),
+                    'has_suspicious_words': bool(features_list[10]),
+                    'entropy': float(features_list[11]),
+                    'domain_entropy': float(features_list[12])
+                }
+            else:
+                # Fallback if feature extraction fails
+                from urllib.parse import urlparse
+                parsed = urlparse(url)
+                domain = parsed.netloc.lower()
+                return {
+                    'url_length': len(url),
+                    'domain_length': len(domain),
+                    'path_length': len(parsed.path),
+                    'is_https': url.startswith('https://'),
+                    'has_suspicious_tld': any(tld in domain for tld in ['.tk', '.ml', '.ga', '.cf'])
+                }
         else:
             # Basic feature extraction fallback
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            domain = parsed.netloc.lower()
             return {
                 'url_length': len(url),
-                'domain_length': len(url.split('/')[2]) if len(url.split('/')) > 2 else 0,
-                'is_https': url.startswith('https'),
-                'has_suspicious_tld': any(tld in url.lower() for tld in ['.tk', '.ml', '.ga', '.cf'])
+                'domain_length': len(domain),
+                'path_length': len(parsed.path),
+                'is_https': url.startswith('https://'),
+                'has_suspicious_tld': any(tld in domain for tld in ['.tk', '.ml', '.ga', '.cf'])
             }
-    except Exception:
-        return {'url_length': len(url), 'domain_length': 0, 'is_https': False, 'has_suspicious_tld': False}
+    except Exception as e:
+        # Safe fallback
+        return {
+            'url_length': len(url),
+            'domain_length': 0,
+            'path_length': 0,
+            'is_https': False,
+            'has_suspicious_tld': False
+        }
 
-def analyze_url_with_model(url, model_name, classifier, feature_extractor, analysis_depth="Enterprise Grade"):
+def analyze_url_with_model(url, model_name, classifier, analysis_depth="Enterprise Grade"):
     """Analyze URL with specified model and analysis depth"""
     try:
         # Ensure URL has protocol for proper analysis
@@ -399,11 +431,11 @@ def analyze_url_with_model(url, model_name, classifier, feature_extractor, analy
                     "threat_type": get_enhanced_threat_type(result),
                     "detection_method": get_detection_method_for_depth("Enhanced Classifier v4.0", analysis_depth)
                 },
-                "url_features": extract_url_features_safe(url, feature_extractor)
+                "url_features": extract_url_features_safe(url, classifier)
             }
         else:
             # Generate model-specific predictions with different behaviors
-            return generate_model_specific_prediction(url, model_name, classifier, feature_extractor, analysis_depth)
+            return generate_model_specific_prediction(url, model_name, classifier, analysis_depth)
             
     except Exception as e:
         print(f"ERROR in analyze_url_with_model: {str(e)}")
@@ -694,7 +726,6 @@ def main():
     
     # Load models
     classifier = load_enhanced_classifier()
-    feature_extractor = load_feature_extractor()
     
     if classifier is None:
         st.error("Security models not available. Please check system configuration.")
@@ -737,7 +768,7 @@ def main():
             
             # Use Enhanced Classifier if force_enhanced is True
             model_to_use = "Enhanced Classifier v4.0" if force_enhanced else selected_model
-            analysis = analyze_url_with_model(url_input.strip(), model_to_use, classifier, feature_extractor, analysis_depth)
+            analysis = analyze_url_with_model(url_input.strip(), model_to_use, classifier, analysis_depth)
             
             # Display professional results
             display_professional_results(analysis, url_input.strip(), active_model, show_technical, analysis_depth)
