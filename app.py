@@ -512,13 +512,13 @@ def main():
                                 if 'risk_level' in main_pred:
                                     # New format from enhanced classifier
                                     risk_level = "HIGH RISK" if main_pred.get('risk_level') == 'High' else "LOW RISK"
-                                    classification = main_pred.get('risk_level', 'unknown')
-                                    confidence = main_pred.get('confidence', 0.0)
+                                    classification = main_pred.get('risk_level', 'unknown').upper()  # Show High/Low instead of unknown
+                                    confidence = float(main_pred.get('confidence', 0.0))
                                     reason = main_pred.get('explanation', 'Classification')
                                 else:
                                     # Old format fallback
                                     classification = main_pred.get('prediction', 'unknown')
-                                    confidence = main_pred.get('confidence', 0.0)
+                                    confidence = float(main_pred.get('confidence', 0.0))
                                     reason = main_pred.get('reason', 'Classification')
                                     risk_level = "HIGH RISK" if classification in ['phishing', 'malware', 'defacement', 'malicious'] else "LOW RISK"
                                 
@@ -564,7 +564,7 @@ def main():
                                     results_df.append({
                                         'Model': model_name,
                                         'Prediction': prediction,
-                                        'Confidence': f"{confidence:.1f}%" if confidence else "N/A"
+                                        'Confidence': f"{float(confidence):.1f}%" if confidence else "N/A"
                                     })
                             
                             st.dataframe(pd.DataFrame(results_df), width='stretch')
@@ -575,16 +575,15 @@ def main():
                             col1, col2, col3 = st.columns(3)
                             
                             with col1:
-                                # Risk Level Gauge
-                                risk_score = confidence if confidence else 0
+                                # Risk Level Gauge - Fix range to 0-100 properly
+                                risk_score = min(max(confidence if confidence else 0, 0), 100)  # Ensure 0-100 range
                                 fig_gauge = go.Figure(go.Indicator(
-                                    mode = "gauge+number+delta",
+                                    mode = "gauge+number",
                                     value = risk_score,
                                     domain = {'x': [0, 1], 'y': [0, 1]},
-                                    title = {'text': "Confidence Score"},
-                                    delta = {'reference': 80},
+                                    title = {'text': f"Confidence: {risk_score:.1f}%"},
                                     gauge = {
-                                        'axis': {'range': [None, 100]},
+                                        'axis': {'range': [0, 100]},  # Fixed range
                                         'bar': {'color': risk_color},
                                         'steps': [
                                             {'range': [0, 50], 'color': "lightgray"},
@@ -646,24 +645,27 @@ def main():
                                 with col1:
                                     st.markdown("### 📊 Classification Details")
                                     
-                                    # Classification result with color coding
-                                    pred_class = enhanced_pred.get('prediction', 'unknown')
-                                    confidence = enhanced_pred.get('confidence', 0.0)
+                                    # Classification result with color coding - Use correct keys
+                                    risk_level = enhanced_pred.get('risk_level', enhanced_pred.get('prediction', 'unknown'))
+                                    confidence = float(enhanced_pred.get('confidence', 0.0))
+                                    explanation = enhanced_pred.get('explanation', enhanced_pred.get('reason', 'No explanation'))
                                     
-                                    if pred_class == 'benign':
+                                    if risk_level == 'Low' or risk_level == 'benign':
                                         color = "#28a745"  # Green
                                         icon = "✅"
                                         risk = "LOW RISK"
+                                        display_class = "LEGITIMATE"
                                     else:
                                         color = "#dc3545"  # Red  
                                         icon = "⚠️"
                                         risk = "HIGH RISK"
+                                        display_class = "THREAT DETECTED"
                                     
                                     st.markdown(f"""
                                     <div style='padding: 15px; border-radius: 8px; background-color: {color}15; border-left: 4px solid {color}'>
-                                    <h4 style='color: {color}; margin: 0;'>{icon} {pred_class.upper()}</h4>
+                                    <h4 style='color: {color}; margin: 0;'>{icon} {display_class}</h4>
                                     <p style='margin: 5px 0 0 0;'><strong>Risk Level:</strong> {risk}</p>
-                                    <p style='margin: 5px 0 0 0;'><strong>Confidence:</strong> {confidence:.1%}</p>
+                                    <p style='margin: 5px 0 0 0;'><strong>Confidence:</strong> {confidence:.1f}%</p>
                                     </div>
                                     """, unsafe_allow_html=True)
                                     
@@ -675,10 +677,10 @@ def main():
                                 
                                 with col2:
                                     st.markdown("### 🧠 Decision Reasoning")
-                                    reason = enhanced_pred.get('reason', 'Enhanced classification algorithm')
+                                    decision_reason = enhanced_pred.get('explanation', enhanced_pred.get('reason', 'Enhanced classification algorithm'))
                                     
                                     # Explain the reasoning
-                                    if 'Trusted domain override' in reason:
+                                    if 'Trusted domain override' in decision_reason:
                                         st.success("🛡️ **Trusted Domain Protection**")
                                         st.write("This URL belongs to a verified trusted domain in our whitelist.")
                                         st.write("**Security Features:**")
@@ -686,7 +688,7 @@ def main():
                                         st.write("• Automatic safe classification")
                                         st.write("• Override of ML predictions")
                                         
-                                    elif 'IP address URL' in reason:
+                                    elif 'IP address URL' in decision_reason:
                                         st.error("🚨 **Direct IP Access Detected**")
                                         st.write("URLs with direct IP addresses are flagged as suspicious.")
                                         st.write("**Risk Factors:**")
@@ -694,7 +696,7 @@ def main():
                                         st.write("• Common in malware distribution")
                                         st.write("• Difficult to verify legitimacy")
                                         
-                                    elif 'Suspicious TLD' in reason:
+                                    elif 'Suspicious TLD' in decision_reason or 'High-risk TLD' in decision_reason:
                                         st.warning("⚠️ **Suspicious Domain Extension**")
                                         st.write("Domain uses a TLD commonly associated with malicious activity.")
                                         st.write("**Risk Indicators:**")
@@ -702,7 +704,7 @@ def main():
                                         st.write("• Frequently used by attackers")
                                         st.write("• Low registration barriers")
                                         
-                                    elif 'URL shortener' in reason:
+                                    elif 'URL shortener' in decision_reason:
                                         st.warning("🔗 **URL Shortening Service**")
                                         st.write("Shortened URLs can hide the actual destination.")
                                         st.write("**Security Concerns:**")
@@ -723,9 +725,9 @@ def main():
                                 summary_data = {
                                     "Attribute": ["Final Classification", "Confidence Score", "Decision Method", "Risk Assessment"],
                                     "Value": [
-                                        pred_class.title(),
-                                        f"{confidence:.3f} ({confidence_percentage:.1f}%)",
-                                        reason,
+                                        display_class.title(),
+                                        f"{confidence:.1f}%",
+                                        explanation,
                                         risk
                                     ]
                                 }
