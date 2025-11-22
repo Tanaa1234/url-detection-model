@@ -883,6 +883,10 @@ def main():
     selected_info = model_info.get(selected_model, "Performance data not available")
     st.sidebar.info(selected_info)
     
+    # Add refresh button to clear any cached values
+    if st.sidebar.button("🔄 Refresh Models", help="Refresh model performance data"):
+        st.rerun()
+    
     st.sidebar.markdown("#### Analysis Options")
     show_technical = st.sidebar.checkbox("Show Technical Details", value=False)
     analysis_depth = st.sidebar.selectbox(
