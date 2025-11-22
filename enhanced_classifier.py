@@ -97,87 +97,179 @@ class EnhancedURLClassifier:
         try:
             extracted = tldextract.extract(url)
             domain = f"{extracted.domain}.{extracted.suffix}" if extracted.suffix else extracted.domain
+            subdomain = extracted.subdomain
             
-            # Government and educational domains
+            # Government and educational domains (very high trust)
             gov_edu_tlds = ['.gov', '.edu', '.ac.', '.edu.', '.gov.']
             for tld in gov_edu_tlds:
                 if tld in url.lower():
                     return True, "Government/Educational domain"
             
-            # Major country code TLDs with legitimate patterns
+            # Major legitimate patterns
             legitimate_patterns = {
-                'legitimate_subdomains': ['www', 'api', 'docs', 'support', 'help', 'blog', 'news', 'cdn', 'static'],
-                'legitimate_tlds': ['.org', '.net', '.co.uk', '.ca', '.de', '.fr', '.jp', '.au'],
-                'development_patterns': ['localhost', '127.0.0.1', 'dev.', 'staging.', 'test.'],
-                'cdn_patterns': ['cdn.', 'assets.', 'static.', 'img.', 'media.', 'files.']
+                'legitimate_subdomains': ['www', 'api', 'docs', 'support', 'help', 'blog', 'news', 'cdn', 'static', 
+                                        'shop', 'store', 'mail', 'email', 'portal', 'app', 'mobile', 'secure'],
+                'legitimate_tlds': ['.org', '.net', '.co.uk', '.ca', '.de', '.fr', '.jp', '.au', '.co', '.io', 
+                                   '.us', '.it', '.es', '.nl', '.br', '.in', '.ru', '.kr', '.sg'],
+                'development_patterns': ['localhost', '127.0.0.1', 'dev.', 'staging.', 'test.', 'demo.', 'beta.'],
+                'cdn_patterns': ['cdn.', 'assets.', 'static.', 'img.', 'media.', 'files.', 'images.', 'js.', 'css.'],
+                'business_patterns': ['.com', '.biz', '.info', '.pro', '.store', '.shop', '.online', '.site']
             }
             
-            # Check for development/testing patterns (should be benign in dev environments)
+            # Check for development/testing patterns (benign in dev environments)
             for dev_pattern in legitimate_patterns['development_patterns']:
                 if dev_pattern in url.lower():
                     return True, "Development/Testing environment"
             
-            # Check for CDN patterns
+            # Check for CDN/asset patterns
             for cdn_pattern in legitimate_patterns['cdn_patterns']:
-                if url.lower().startswith(f"https://{cdn_pattern}") or url.lower().startswith(f"http://{cdn_pattern}"):
+                if (url.lower().startswith(f"https://{cdn_pattern}") or 
+                    url.lower().startswith(f"http://{cdn_pattern}") or
+                    subdomain.startswith(cdn_pattern.replace('.', ''))):
                     return True, "CDN/Asset delivery pattern"
             
-            # Check for HTTPS + legitimate TLD + reasonable length
+            # Enhanced business legitimacy check
+            if url.startswith('https://'):
+                # Check for reasonable domain characteristics
+                domain_clean = domain.lower().replace('-', '').replace('_', '')
+                
+                # Good signs: reasonable length, common TLD, no suspicious keywords
+                good_length = 4 <= len(extracted.domain) <= 30
+                common_tld = any(tld in domain.lower() for tld in legitimate_patterns['legitimate_tlds'] + 
+                                legitimate_patterns['business_patterns'])
+                no_suspicious_words = not any(word in domain.lower() for word in 
+                                            ['phishing', 'malware', 'fake', 'scam', 'hack', 'virus', 'trojan'])
+                
+                # Check for legitimate subdomain patterns
+                legitimate_subdomain = (subdomain == '' or subdomain == 'www' or 
+                                      any(sub in subdomain for sub in legitimate_patterns['legitimate_subdomains']))
+                
+                # Alphanumeric domain (not just random characters)
+                mostly_alpha = sum(c.isalpha() for c in extracted.domain) > len(extracted.domain) * 0.6
+                
+                if (good_length and common_tld and no_suspicious_words and 
+                    legitimate_subdomain and mostly_alpha):
+                    return True, "Legitimate business website pattern"
+            
+            # Check for well-formed email provider patterns
+            email_providers = ['gmail', 'outlook', 'yahoo', 'hotmail', 'icloud', 'protonmail', 'zoho']
+            if any(provider in domain.lower() for provider in email_providers):
+                return True, "Email service provider"
+            
+            # Check for established technology companies not in trusted list
+            tech_indicators = ['tech', 'software', 'cloud', 'data', 'digital', 'cyber', 'IT', 'systems']
             if (url.startswith('https://') and 
-                any(tld in domain.lower() for tld in legitimate_patterns['legitimate_tlds']) and
-                len(domain) < 50 and  # Reasonable domain length
-                '.' in domain and  # Has TLD
-                not any(suspicious in domain.lower() for suspicious in ['phishing', 'malware', 'fake', 'scam'])):
-                return True, "Legitimate HTTPS pattern"
+                any(indicator.lower() in domain.lower() for indicator in tech_indicators) and
+                len(extracted.domain) < 20):
+                return True, "Technology company pattern"
             
             return False, "No legitimate pattern detected"
             
         except:
             return False, "Pattern analysis failed"
     
-    def detect_typosquatting(self, url):
-        """Detect typosquatting patterns in URLs"""
+    def detect_advanced_threats(self, url):
+        """Advanced threat detection for URLs outside dataset"""
         try:
             extracted = tldextract.extract(url)
             domain = extracted.domain.lower()
+            full_domain = f"{extracted.domain}.{extracted.suffix}".lower()
             
-            # Common typosquatting patterns for major sites
+            # Expanded typosquatting patterns for major sites
             typosquatting_patterns = {
-                'paypal': ['paypai', 'paypaI', 'paypaII', 'payp4l', 'paypayl', 'paipal', 'pyppal', 'paypa1', 'paypall'],
-                'google': ['goog1e', 'gooogle', 'googIe', 'g00gle', 'googel', 'gogle'],
-                'microsoft': ['microsft', 'microsooft', 'microsoftt', 'micr0soft', 'mikrosoft'],
-                'amazon': ['amazom', 'amazone', 'amazoon', 'am4zon', 'amazn', 'amazonn'],
-                'facebook': ['facebbok', 'faceebook', 'facbook', 'f4cebook', 'facebok'],
-                'apple': ['appIe', 'aple', 'applee', 'app1e', 'appl3'],
-                'github': ['githup', 'githuub', 'g1thub', 'guthub', 'githib'],
-                'twitter': ['twiter', 'twiteer', 'twittter', 'tw1tter', 'twiiter']
+                'paypal': ['paypai', 'paypaI', 'paypaII', 'payp4l', 'paypayl', 'paipal', 'pyppal', 'paypa1', 'paypall', 'paypaII', 'papyal', 'payp@l'],
+                'google': ['goog1e', 'gooogle', 'googIe', 'g00gle', 'googel', 'gogle', 'g0ogle', 'googie', 'goog1le', 'gooqle'],
+                'microsoft': ['microsft', 'microsooft', 'microsoftt', 'micr0soft', 'mikrosoft', 'microsofy', 'micosoft', 'microsof7'],
+                'amazon': ['amazom', 'amazone', 'amazoon', 'am4zon', 'amazn', 'amazonn', 'amaz0n', 'amazom', 'ammazon'],
+                'facebook': ['facebbok', 'faceebook', 'facbook', 'f4cebook', 'facebok', 'faceb00k', 'fac3book', 'facebookk'],
+                'apple': ['appIe', 'aple', 'applee', 'app1e', 'appl3', 'app1le', 'appie', 'aplle'],
+                'github': ['githup', 'githuub', 'g1thub', 'guthub', 'githib', 'githug', 'gith0b', 'gi7hub'],
+                'twitter': ['twiter', 'twiteer', 'twittter', 'tw1tter', 'twiiter', 'twitt3r', 'twittr', 'twitteer'],
+                'instagram': ['instagr4m', 'instagramm', 'inst4gram', 'instagam', 'instqgram', 'insragram'],
+                'linkedin': ['linkedln', 'linkedin', 'linked1n', 'linkdin', 'linkedinn', 'linkedim'],
+                'netflix': ['netf1ix', 'netflixx', 'netf1lix', 'ne7flix', 'netflx', 'netfl1x'],
+                'spotify': ['spot1fy', 'spottify', 'sp0tify', 'spotfiy', 'spotifi', 'spottfy'],
+                'dropbox': ['dr0pbox', 'dropb0x', 'dropboxx', 'dropb0x', 'drapbox', 'dropbax'],
+                'adobe': ['ad0be', 'adobee', 'ad0bee', 'adope', 'adobo', 'adove']
             }
             
-            # Check if domain matches typosquatting patterns
+            # Check direct typosquatting matches
             for legit_domain, typos in typosquatting_patterns.items():
                 if domain in typos:
-                    return True, f"Typosquatting of {legit_domain}"
+                    return True, f"Typosquatting of {legit_domain}", 0.95
                     
-            # Generic suspicious patterns
-            suspicious_chars = ['0', '1', 'I', 'l']
-            legit_sites = ['paypal', 'google', 'microsoft', 'amazon', 'facebook', 'apple', 'github', 'twitter']
+            # Advanced character substitution detection
+            suspicious_substitutions = {
+                'o': ['0', 'ø', 'ο'], 'l': ['1', 'I', '|'], 'i': ['1', 'l', 'I'], 
+                'a': ['@', 'α'], 'e': ['3', 'ε'], 's': ['$', '5'], 'g': ['9', 'q'],
+                'm': ['n', 'rn'], 'u': ['v', 'μ'], 'c': ['e', '©'], 't': ['7', '+']
+            }
+            
+            # Check for homograph attacks and character substitutions
+            legit_sites = ['paypal', 'google', 'microsoft', 'amazon', 'facebook', 'apple', 'github', 
+                          'twitter', 'instagram', 'linkedin', 'netflix', 'spotify', 'dropbox', 'adobe',
+                          'yahoo', 'ebay', 'walmart', 'target', 'bestbuy', 'chase', 'wellsfargo']
             
             for site in legit_sites:
+                if len(domain) == len(site):  # Same length suggests substitution
+                    differences = sum(1 for a, b in zip(domain, site) if a != b)
+                    if 1 <= differences <= 2:  # 1-2 character differences
+                        return True, f"Character substitution attack targeting {site}", 0.90
+                        
+                # Check if domain contains the legitimate site name with additions
                 if site in domain and domain != site:
-                    # Check for character substitutions
-                    for char in suspicious_chars:
-                        if char in domain and char not in site:
-                            return True, f"Suspicious character substitution in {site}-like domain"
-                            
-            return False, "No typosquatting detected"
+                    extra_chars = domain.replace(site, '')
+                    if len(extra_chars) <= 3:  # Short additions like numbers/symbols
+                        return True, f"Domain spoofing of {site}", 0.85
+            
+            # Banking and financial institution patterns
+            financial_keywords = ['bank', 'credit', 'loan', 'finance', 'payment', 'transfer', 'account', 
+                                 'secure', 'verify', 'update', 'suspended', 'locked', 'confirm']
+            financial_domains = ['chase', 'wellsfargo', 'bankofamerica', 'citi', 'capitalone', 'usbank']
+            
+            suspicious_financial = False
+            for keyword in financial_keywords:
+                if keyword in domain:
+                    for fin_domain in financial_domains:
+                        if fin_domain in domain and domain != fin_domain:
+                            return True, f"Financial phishing targeting {fin_domain}", 0.90
+                    suspicious_financial = True
+            
+            # Generic phishing patterns
+            phishing_indicators = [
+                'secure-', 'verify-', 'update-', 'suspended-', 'account-', 'billing-',
+                'security-', 'alert-', 'warning-', 'urgent-', 'immediate-', 'action-',
+                '-security', '-verify', '-update', '-login', '-account', '-billing'
+            ]
+            
+            for indicator in phishing_indicators:
+                if indicator in domain:
+                    return True, f"Phishing pattern detected: {indicator}", 0.80
+            
+            # Cryptocurrency and tech scam patterns
+            crypto_keywords = ['bitcoin', 'crypto', 'blockchain', 'wallet', 'mining', 'nft', 'defi']
+            tech_scam_patterns = ['free-', 'win-', 'prize-', 'gift-', 'bonus-', 'earn-']
+            
+            for crypto in crypto_keywords:
+                if crypto in domain:
+                    for scam in tech_scam_patterns:
+                        if scam in domain:
+                            return True, f"Cryptocurrency scam pattern", 0.85
+            
+            return False, "No advanced threats detected", 0.0
             
         except:
-            return False, "Typosquatting analysis failed"
+            return False, "Advanced threat analysis failed", 0.0
+            
+    def detect_typosquatting(self, url):
+        """Legacy method - now calls advanced threat detection"""
+        is_threat, reason, confidence = self.detect_advanced_threats(url)
+        return is_threat, reason
             
     def predict_url(self, url):
-        """Enhanced prediction with trusted domain override"""
+        """Enhanced prediction with comprehensive threat detection for out-of-dataset URLs"""
         try:
-            # First check if it's a trusted domain
+            # First check if it's a trusted domain (highest priority)
             if self.is_trusted_url(url):
                 return {
                     'prediction': 'benign',
@@ -185,13 +277,13 @@ class EnhancedURLClassifier:
                     'reason': 'Trusted domain override'
                 }
             
-            # Check for typosquatting first (high priority)
-            is_typo, typo_reason = self.detect_typosquatting(url)
-            if is_typo:
+            # Advanced threat detection (high priority)
+            is_threat, threat_reason, threat_confidence = self.detect_advanced_threats(url)
+            if is_threat:
                 return {
                     'prediction': 'phishing',
-                    'confidence': 0.90,
-                    'reason': typo_reason
+                    'confidence': threat_confidence,
+                    'reason': threat_reason
                 }
             
             # Check for legitimate patterns in non-trusted domains
@@ -203,37 +295,79 @@ class EnhancedURLClassifier:
                     'reason': f'Legitimate pattern: {legit_reason}'
                 }
             
-            # Check for obvious malicious patterns
+            # Enhanced malicious pattern detection
             url_lower = url.lower()
+            extracted = tldextract.extract(url)
+            domain = extracted.domain.lower()
             
-            # IP address check
+            # IP address check (high threat)
             import re
-            if re.search(r'http://\d+\.\d+\.\d+\.\d+', url):
+            if re.search(r'https?://\d+\.\d+\.\d+\.\d+', url):
                 return {
                     'prediction': 'malware',
                     'confidence': 0.90,
-                    'reason': 'IP address URL'
+                    'reason': 'Direct IP address URL (bypassing DNS)'
                 }
             
-            # Suspicious TLD check
-            suspicious_tlds = ['.tk', '.ml', '.ga', '.cf']
+            # Suspicious TLD check with expanded list
+            suspicious_tlds = ['.tk', '.ml', '.ga', '.cf', '.pw', '.top', '.click', '.download', 
+                              '.work', '.party', '.stream', '.racing', '.review', '.science']
             if any(tld in url_lower for tld in suspicious_tlds):
                 return {
                     'prediction': 'phishing',
                     'confidence': 0.80,
-                    'reason': 'Suspicious TLD'
+                    'reason': 'High-risk TLD commonly used by threat actors'
                 }
             
-            # URL shortener check (be more specific to avoid false positives)
-            shorteners = ['bit.ly/', 'tinyurl.com/', 't.co/', 'goo.gl/', 'ow.ly/', 'short.link/', 'tiny.cc/']
+            # Enhanced URL shortener detection
+            shorteners = ['bit.ly/', 'tinyurl.com/', 't.co/', 'goo.gl/', 'ow.ly/', 'short.link/', 
+                         'tiny.cc/', 'rb.gy/', 'cutt.ly/', 'is.gd/', 'buff.ly/', 'lnkd.in/']
             if any(short in url_lower for short in shorteners):
                 return {
                     'prediction': 'phishing',
-                    'confidence': 0.75,
-                    'reason': 'URL shortener'
+                    'confidence': 0.70,
+                    'reason': 'URL shortener (potential redirect to malicious content)'
                 }
             
-            # Try to load and use ML model if available
+            # Suspicious URL structure patterns
+            suspicious_patterns = [
+                (re.compile(r'https?://[^/]*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'), 'IP address in URL'),
+                (re.compile(r'https?://[^/]*-[^/]*-[^/]*-[^/]*'), 'Excessive hyphens in domain'),
+                (re.compile(r'https?://[^/]*\w{20,}'), 'Extremely long domain name'),
+                (re.compile(r'https?://[^/]*[0-9]{4,}'), 'Many consecutive numbers in domain'),
+            ]
+            
+            for pattern, reason in suspicious_patterns:
+                if pattern.search(url):
+                    return {
+                        'prediction': 'phishing',
+                        'confidence': 0.75,
+                        'reason': f'Suspicious URL structure: {reason}'
+                    }
+            
+            # Advanced keyword analysis for out-of-dataset threats
+            malicious_keywords = {
+                'phishing': ['secure', 'verify', 'update', 'suspended', 'locked', 'confirm', 'alert', 'warning', 'urgent'],
+                'malware': ['download', 'free', 'crack', 'keygen', 'patch', 'hack', 'exploit'],
+                'scam': ['prize', 'winner', 'congratulations', 'claim', 'bonus', 'reward', 'gift']
+            }
+            
+            for category, keywords in malicious_keywords.items():
+                keyword_count = sum(1 for keyword in keywords if keyword in domain)
+                if keyword_count >= 2:  # Multiple suspicious keywords
+                    return {
+                        'prediction': category,
+                        'confidence': 0.80,
+                        'reason': f'Multiple {category} keywords detected'
+                    }
+                elif keyword_count == 1 and len(domain) < 15:  # Single keyword in short domain
+                    return {
+                        'prediction': category,
+                        'confidence': 0.70,
+                        'reason': f'Suspicious {category} keyword pattern'
+                    }
+            
+            # Try ML model if available (fallback for edge cases)
             if self.model is None:
                 self._try_load_model()
                 
@@ -244,61 +378,80 @@ class EnhancedURLClassifier:
                     pred_proba = self.model.predict_proba(features)[0]
                     class_name = self.feature_extractor.label_encoder.inverse_transform([pred])[0]
                     
-                    return {
-                        'prediction': class_name,
-                        'confidence': max(pred_proba),
-                        'reason': 'ML model prediction'
-                    }
+                    # For out-of-dataset URLs, be more conservative with ML predictions
+                    ml_confidence = max(pred_proba)
+                    if ml_confidence > 0.8:  # High confidence ML prediction
+                        return {
+                            'prediction': class_name,
+                            'confidence': ml_confidence,
+                            'reason': 'High-confidence ML prediction'
+                        }
                 except:
-                    pass  # Fall through to heuristics
+                    pass  # Fall through to enhanced heuristics
             
-            # Enhanced heuristic fallback
-            # Enhanced fallback heuristics
-            extracted = tldextract.extract(url)
-            domain = extracted.domain.lower()
-            
-            # Check for suspicious domain characteristics
+            # Enhanced heuristic scoring for unknown URLs
             suspicious_score = 0
+            legitimacy_score = 0
             
-            # Long domain names are often suspicious
-            if len(domain) > 15:
-                suspicious_score += 0.3
+            # Domain characteristics analysis
+            if len(domain) > 20:
+                suspicious_score += 0.4
+            elif 5 <= len(domain) <= 15:
+                legitimacy_score += 0.3
                 
-            # Multiple numbers in domain
-            if sum(c.isdigit() for c in domain) > 2:
+            # Character composition analysis
+            digit_ratio = sum(c.isdigit() for c in domain) / len(domain) if domain else 0
+            if digit_ratio > 0.3:
+                suspicious_score += 0.4
+            elif digit_ratio == 0:
+                legitimacy_score += 0.2
+                
+            # Special character analysis
+            special_char_count = sum(1 for c in domain if c in '-_.~')
+            if special_char_count > 3:
+                suspicious_score += 0.3
+            elif special_char_count <= 1:
+                legitimacy_score += 0.2
+                
+            # Protocol and structure analysis
+            if url.startswith('https://'):
+                legitimacy_score += 0.3
+            else:
                 suspicious_score += 0.4
                 
-            # Excessive hyphens
-            if domain.count('-') > 2:
-                suspicious_score += 0.3
-                
-            # Suspicious keywords
-            suspicious_keywords = ['secure', 'verify', 'update', 'login', 'bank', 'paypal', 'microsoft']
-            if any(keyword in domain for keyword in suspicious_keywords):
-                suspicious_score += 0.5
-                
-            # Non-HTTPS adds suspicion
-            if not url.startswith('https://'):
-                suspicious_score += 0.2
-                
-            if suspicious_score > 0.5:
+            # Dictionary word analysis (simple heuristic)
+            common_words = ['news', 'blog', 'shop', 'store', 'tech', 'company', 'service', 'group', 'online']
+            if any(word in domain for word in common_words):
+                legitimacy_score += 0.3
+            
+            # Final decision based on scoring
+            final_score = suspicious_score - legitimacy_score
+            
+            if final_score > 0.5:
                 return {
                     'prediction': 'phishing',
-                    'confidence': min(0.8, 0.5 + suspicious_score),
-                    'reason': 'Suspicious domain characteristics'
+                    'confidence': min(0.75, 0.5 + final_score),
+                    'reason': 'Heuristic analysis indicates suspicious characteristics'
                 }
-            else:
+            elif final_score < -0.3:
                 return {
                     'prediction': 'benign',
-                    'confidence': max(0.4, 0.8 - suspicious_score),
-                    'reason': 'Heuristic analysis'
+                    'confidence': min(0.80, 0.6 + abs(final_score)),
+                    'reason': 'Heuristic analysis indicates legitimate characteristics'
+                }
+            else:
+                # Neutral/unknown case - conservative approach
+                return {
+                    'prediction': 'benign',
+                    'confidence': 0.55,
+                    'reason': 'Insufficient indicators for threat classification'
                 }
                     
         except Exception as e:
             return {
                 'prediction': 'unknown',
                 'confidence': 0.0,
-                'reason': f'Error: {str(e)}'
+                'reason': f'Analysis error: {str(e)}'
             }
                 
     def _try_load_model(self):
