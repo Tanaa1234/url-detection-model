@@ -349,6 +349,7 @@ def main():
             "Support Vector Machine (SVM)",
             "All Models (Ensemble)"
         ],
+        index=0,  # Explicitly set Enhanced Classifier as default
         help="Enhanced Classifier uses ML + rule-based overrides for best accuracy"
     )
     
@@ -361,6 +362,12 @@ def main():
     
     if page == "URL Detector":
         st.header("Single URL Analysis")
+        
+        # Show selected model prominently
+        if selected_model == "Enhanced Classifier (Recommended)":
+            st.success(f"🛡️ **Active Model:** {selected_model} - Optimal protection against phishing URLs")
+        else:
+            st.info(f"🤖 **Active Model:** {selected_model}")
         
         # URL input
         url_input = st.text_input(
@@ -395,6 +402,10 @@ def main():
                             if hasattr(trainer, 'predict_url'):
                                 debug_result = trainer.predict_url(url_input.strip())
                                 st.write(f"Direct Enhanced Classifier Result: {debug_result}")
+                        
+                        # Safety warning if not using Enhanced Classifier
+                        if selected_model != "Enhanced Classifier (Recommended)" and selected_model != "All Models (Ensemble)":
+                            st.warning(f"⚠️ **Notice:** You're using {selected_model}. For best accuracy on phishing URLs, use 'Enhanced Classifier (Recommended)' which combines ML with rule-based detection.")
                         
                         # Check for errors
                         if "error" in predictions:
