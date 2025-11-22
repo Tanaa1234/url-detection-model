@@ -183,6 +183,7 @@ class EnhancedURLClassifier:
                 'amazon': ['amazom', 'amazone', 'amazoon', 'am4zon', 'amazn', 'amazonn', 'amaz0n', 'amazom', 'ammazon'],
                 'facebook': ['facebbok', 'faceebook', 'facbook', 'f4cebook', 'facebok', 'faceb00k', 'fac3book', 'facebookk'],
                 'apple': ['appIe', 'aple', 'applee', 'app1e', 'appl3', 'app1le', 'appie', 'aplle'],
+                'icloud': ['icl0ud', 'iclud', 'icIoud', 'icl0d', 'icloud', 'icloudd', 'iclound', 'icIoudd'],
                 'github': ['githup', 'githuub', 'g1thub', 'guthub', 'githib', 'githug', 'gith0b', 'gi7hub'],
                 'twitter': ['twiter', 'twiteer', 'twittter', 'tw1tter', 'twiiter', 'twitt3r', 'twittr', 'twitteer'],
                 'instagram': ['instagr4m', 'instagramm', 'inst4gram', 'instagam', 'instqgram', 'insragram'],
@@ -197,6 +198,40 @@ class EnhancedURLClassifier:
             for legit_domain, typos in typosquatting_patterns.items():
                 if domain in typos:
                     return True, f"Typosquatting of {legit_domain}", 0.95
+            
+            # Brand impersonation with country code domains (common phishing tactic)
+            brand_impersonation_patterns = [
+                # Format: (brand, suspicious_patterns)
+                ('apple', ['apple-', '-apple', 'applecom', 'apple-com']),
+                ('icloud', ['icloud-', '-icloud', 'icloudcom', 'icloud-com', 'br-icloud']),
+                ('google', ['google-', '-google', 'googlecom', 'google-com']),
+                ('microsoft', ['microsoft-', '-microsoft', 'microsoftcom']),
+                ('paypal', ['paypal-', '-paypal', 'paypalcom']),
+                ('amazon', ['amazon-', '-amazon', 'amazoncom']),
+                ('facebook', ['facebook-', '-facebook', 'facebookcom'])
+            ]
+            
+            for brand, patterns in brand_impersonation_patterns:
+                for pattern in patterns:
+                    if pattern in domain:
+                        # Extra check for country code domains (common phishing)
+                        suspicious_cc_domains = ['.tk', '.ml', '.ga', '.cf', '.br', '.ru', '.cn']
+                        if any(cc in full_domain for cc in suspicious_cc_domains) and brand not in self.trusted_domains:
+                            return True, f"Brand impersonation: {brand} with suspicious country domain", 0.90
+            
+            # Specific high-risk domain patterns (known phishing)
+            high_risk_patterns = [
+                'br-icloud',  # Known phishing pattern
+                'icloud-br',
+                'apple-icloud',
+                'icloud-apple',
+                'secure-icloud',
+                'icloud-secure'
+            ]
+            
+            for risk_pattern in high_risk_patterns:
+                if risk_pattern in domain:
+                    return True, f"Known phishing pattern: {risk_pattern}", 0.95
             
             # Enhanced phishing pattern detection
             url_lower = url.lower()
@@ -367,6 +402,56 @@ class EnhancedURLClassifier:
                     'explanation': 'High-risk TLD commonly used by threat actors'
                 }
             
+            # Defacement detection for CMS and admin patterns
+            cms_defacement_patterns = [
+                'index.php?option=com_', 'index.php?view=', 'index.php?component=',
+                'component/user/', '/user/reset', '/user/login', 'administrator/', 'admin/',
+                'wp-admin/', 'wp-content/', 'option=com_user', 'option=com_contact',
+                'option=com_content', 'option=com_wrapper', 'option=com_virtuemart',
+                'view=article', 'catid=', 'Itemid=', '/reset.html', 'joomla', 'drupal'
+            ]
+            
+            defacement_score = 0
+            for pattern in cms_defacement_patterns:
+                if pattern in url_lower:
+                    defacement_score += 25
+            
+            # Extra score for typical CMS URL structures
+            if 'index.php' in url_lower and ('option=' in url_lower or 'view=' in url_lower):
+                defacement_score += 30
+            
+            if defacement_score >= 50:
+                return {
+                    'risk_level': 'High',
+                    'confidence': min(defacement_score + 40, 90),
+                    'explanation': 'Potential website defacement: CMS vulnerability patterns detected'
+                }
+            
+            # Defacement detection for CMS and admin patterns
+            cms_defacement_patterns = [
+                'index.php?option=com_', 'index.php?view=', 'index.php?component=',
+                'component/user/', '/user/reset', '/user/login', 'administrator/', 'admin/',
+                'wp-admin/', 'wp-content/', 'option=com_user', 'option=com_contact',
+                'option=com_content', 'option=com_wrapper', 'option=com_virtuemart',
+                'view=article', 'catid=', 'Itemid=', '/reset.html', 'joomla', 'drupal'
+            ]
+            
+            defacement_score = 0
+            for pattern in cms_defacement_patterns:
+                if pattern in url_lower:
+                    defacement_score += 25
+            
+            # Extra score for typical CMS URL structures
+            if 'index.php' in url_lower and ('option=' in url_lower or 'view=' in url_lower):
+                defacement_score += 30
+            
+            if defacement_score >= 50:
+                return {
+                    'risk_level': 'High',
+                    'confidence': min(defacement_score + 40, 90),
+                    'explanation': 'Potential website defacement: CMS vulnerability patterns detected'
+                }
+            
             # Enhanced URL shortener detection
             shorteners = ['bit.ly/', 'tinyurl.com/', 't.co/', 'goo.gl/', 'ow.ly/', 'short.link/', 
                          'tiny.cc/', 'rb.gy/', 'cutt.ly/', 'is.gd/', 'buff.ly/', 'lnkd.in/']
@@ -376,6 +461,39 @@ class EnhancedURLClassifier:
                     'confidence': 70.0,
                     'explanation': 'URL shortener (potential redirect to malicious content)'
                 }
+            
+            # Enhanced phishing detection with suspicious subdomains
+            parsed = tldextract.extract(url)
+            subdomain = parsed.subdomain.lower()
+            domain_only = parsed.domain.lower()
+            
+            if subdomain:
+                # Suspicious authentication subdomains
+                auth_subdomains = ['signin', 'login', 'secure', 'verification', 'verify', 'update',
+                                 'account', 'support', 'service', 'auth', 'authentication', 'confirm']
+                
+                brand_domains = ['google', 'microsoft', 'apple', 'paypal', 'amazon', 'facebook']
+                
+                # Check for suspicious auth subdomains on non-brand domains  
+                if any(auth in subdomain for auth in auth_subdomains):
+                    if not any(brand in domain_only for brand in brand_domains):
+                        return {
+                            'risk_level': 'High',
+                            'confidence': 85.0,
+                            'explanation': f'Suspicious authentication subdomain: {subdomain}'
+                        }
+                
+                # Check for long random-looking subdomains (like zukruygxctzmmqi)
+                if len(subdomain) > 15:
+                    consonants = 'bcdfghjklmnpqrstvwxyz'
+                    consonant_clusters = sum(1 for i in range(len(subdomain) - 2) 
+                                           if all(c in consonants for c in subdomain[i:i+3]))
+                    if consonant_clusters >= 2:
+                        return {
+                            'risk_level': 'High',
+                            'confidence': 85.0,
+                            'explanation': f'Suspicious long subdomain with random pattern: {subdomain}'
+                        }
             
             # Suspicious URL structure patterns
             suspicious_patterns = [
@@ -391,6 +509,16 @@ class EnhancedURLClassifier:
                         'risk_level': 'High',
                         'confidence': 75.0,
                         'explanation': f'Suspicious URL structure: {reason}'
+                    }
+            
+            # Suspicious hosting patterns (beget.tech, etc.)
+            suspicious_hosting = ['beget.tech', 'beget.com', 'hostinger.', 'freenom.']
+            for hosting in suspicious_hosting:
+                if hosting in domain:
+                    return {
+                        'risk_level': 'High',
+                        'confidence': 85.0,
+                        'explanation': f'Suspicious hosting provider commonly used for phishing: {hosting}'
                     }
             
             # Advanced keyword analysis for out-of-dataset threats
@@ -473,10 +601,17 @@ class EnhancedURLClassifier:
             if any(word in domain for word in common_words):
                 legitimacy_score += 0.3
             
+            # Check for legitimate directory/people search sites  
+            people_directory_patterns = ['192.com', 'whitepages.com', 'yellowpages.com', 
+                                       'spokeo.com', 'pipl.com', 'intelius.com']
+            for directory in people_directory_patterns:
+                if directory in domain:
+                    legitimacy_score += 0.5  # Boost legitimacy for known directories
+            
             # Final decision based on scoring
             final_score = suspicious_score - legitimacy_score
             
-            if final_score > 0.5:
+            if final_score > 0.6:  # Raised threshold slightly to reduce false positives
                 return {
                     'risk_level': 'High',
                     'confidence': min(75.0, (0.5 + final_score) * 100),

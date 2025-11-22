@@ -19,7 +19,7 @@ import joblib
 # Professional Page Configuration
 st.set_page_config(
     page_title="Enterprise URL Security Analyzer",
-    page_icon="🛡️",
+    page_icon="🔒",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -127,18 +127,22 @@ def extract_url_features_safe(url, feature_extractor):
 def analyze_url_with_model(url, model_name, classifier, feature_extractor):
     """Analyze URL with specified model"""
     try:
-        if model_name == "Enhanced Classifier (Recommended)" or "Enhanced" in model_name:
+        # Force Enhanced Classifier for all requests to ensure accuracy
+        if True:  # Always use Enhanced Classifier
             # Use enhanced classifier
             result = classifier.predict_url(url)
+            
+            # Debug info
+            print(f"DEBUG: URL={url}, Model={model_name}, Result={result}")
             
             return {
                 "overall_risk": "HIGH RISK" if result.get('risk_level') == 'High' else "LOW RISK",
                 "confidence_score": result.get('confidence', 0),
                 "explanation": result.get('explanation', 'No explanation provided'),
-                "model_used": "Enhanced Classifier",
+                "model_used": "Enhanced Classifier (Forced)",
                 "technical_details": {
                     "risk_level": result.get('risk_level'),
-                    "threat_type": "Phishing" if "phishing" in result.get('explanation', '').lower() else "Malware" if "malware" in result.get('explanation', '').lower() else "Suspicious",
+                    "threat_type": "Phishing" if "phishing" in result.get('explanation', '').lower() or "typosquatting" in result.get('explanation', '').lower() else "Malware" if "malware" in result.get('explanation', '').lower() else "Suspicious",
                     "detection_method": "Rule-based + ML Hybrid"
                 },
                 "url_features": extract_url_features_safe(url, feature_extractor)
@@ -167,7 +171,7 @@ def analyze_url_with_model(url, model_name, classifier, feature_extractor):
                 "model_used": model_name,
                 "technical_details": {
                     "risk_level": base_result.get('risk_level'),
-                    "threat_type": "Phishing" if "phishing" in base_result.get('explanation', '').lower() else "Malware" if "malware" in base_result.get('explanation', '').lower() else "Suspicious",
+                    "threat_type": "Legitimate" if base_result.get('risk_level') == 'Low' else "Phishing" if "phishing" in base_result.get('explanation', '').lower() or "typosquatting" in base_result.get('explanation', '').lower() else "Malware" if "malware" in base_result.get('explanation', '').lower() else "Suspicious",
                     "detection_method": f"{model_name} Algorithm"
                 },
                 "url_features": extract_url_features_safe(url, feature_extractor)
@@ -201,7 +205,7 @@ def display_professional_results(analysis, url, model_used, show_technical=False
     
     # Technical Details (if enabled)
     if show_technical and "technical_details" in analysis:
-        st.markdown("### 🔬 Technical Analysis")
+        st.markdown("### Technical Analysis")
         tech_details = analysis["technical_details"]
         
         col1, col2, col3 = st.columns(3)
@@ -216,7 +220,7 @@ def display_professional_results(analysis, url, model_used, show_technical=False
             st.metric("Detection Algorithm", tech_details.get("detection_method", "Unknown"))
 
     # Professional Analytics Dashboard
-    st.markdown("### 📊 Security Analytics")
+    st.markdown("### Security Analytics")
     
     # Create three-column layout for charts
     col1, col2, col3 = st.columns(3)
@@ -343,7 +347,7 @@ def main():
     # Professional Header
     st.markdown("""
     <div class='main-header'>
-        <h1 style='margin: 0; font-size: 2.5em;'>🛡️ Enterprise URL Security Analyzer</h1>
+        <h1 style='margin: 0; font-size: 2.5em;'>Enterprise URL Security Analyzer</h1>
         <p style='margin: 10px 0 0 0; font-size: 1.2em; opacity: 0.9;'>Advanced AI-powered threat detection system</p>
     </div>
     """, unsafe_allow_html=True)
@@ -462,7 +466,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666; padding: 20px;'>
-        <p>🛡️ Enterprise URL Security Analyzer | Advanced AI Threat Detection System</p>
+        <p>Enterprise URL Security Analyzer | Advanced AI Threat Detection System</p>
         <p style='font-size: 0.9em;'>Powered by Enhanced Machine Learning Algorithms</p>
     </div>
     """, unsafe_allow_html=True)
