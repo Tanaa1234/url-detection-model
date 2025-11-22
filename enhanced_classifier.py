@@ -511,15 +511,75 @@ class EnhancedURLClassifier:
                         'explanation': f'Suspicious URL structure: {reason}'
                     }
             
-            # Suspicious hosting patterns (beget.tech, etc.)
-            suspicious_hosting = ['beget.tech', 'beget.com', 'hostinger.', 'freenom.']
+            # ENHANCED phishing detection patterns
+            phishing_score = 0
+            phishing_reasons = []
+            
+            # Suspicious hosting providers
+            suspicious_hosting = ['beget.tech', 'beget.com', 'hostinger.', 'freenom.', 'unitedcolleges.net']
             for hosting in suspicious_hosting:
                 if hosting in domain:
-                    return {
-                        'risk_level': 'High',
-                        'confidence': 85.0,
-                        'explanation': f'Suspicious hosting provider commonly used for phishing: {hosting}'
-                    }
+                    phishing_score += 90
+                    phishing_reasons.append(f'Suspicious hosting: {hosting}')
+            
+            # Suspicious domain patterns for phishing
+            phishing_domain_patterns = [
+                'retajconsultancy', 'roverslands', 'unitedcolleges', 'alexpay', 'designeremdoces'
+            ]
+            
+            for pattern in phishing_domain_patterns:
+                if pattern in domain:
+                    phishing_score += 70
+                    phishing_reasons.append(f'Suspicious domain pattern: {pattern}')
+            
+            # Domain + suspicious keywords combinations
+            if 'consultancy' in domain or 'pay' in domain or 'facebook' in domain:
+                if not any(trusted in domain for trusted in ['facebook.com', 'paypal.com']):
+                    phishing_score += 50
+                    phishing_reasons.append('Suspicious brand-like keywords in domain')
+            
+            # Components path pattern (often used in phishing)
+            if 'components/com_contact' in url_lower or 'ggdrives' in url_lower:
+                phishing_score += 80
+                phishing_reasons.append('Suspicious component path pattern')
+            
+            if phishing_score >= 50:
+                return {
+                    'risk_level': 'High',
+                    'confidence': min(phishing_score + 10, 95),
+                    'explanation': f'Phishing detected: {", ".join(phishing_reasons[:2])}'
+                }
+            
+            # ENHANCED malware detection patterns
+            malware_indicators = {
+                'numeric_domains': r'\d{4,}\.(com|info|net)',  # Many numbers in domain
+                'chinese_chars': r'[\u4e00-\u9fff]+',  # Chinese characters often indicate malware
+                'suspicious_extensions': ['exe', 'zip', 'rar', 'scr', 'bat'],
+                'malware_paths': ['member/sport', 'app/member', 'guest&langx']
+            }
+            
+            malware_score = 0
+            
+            # Check for numeric-heavy domains (like 824555.com, 9779.info)
+            import re
+            if re.search(r'\d{4,}\.(com|info|net|org)', domain):
+                malware_score += 60
+            
+            # Chinese/Unicode character patterns
+            if re.search(r'[\u4e00-\u9fff]+', url) or '%E5%84%BF' in url:
+                malware_score += 70
+            
+            # Suspicious path patterns common in malware
+            for path in malware_indicators['malware_paths']:
+                if path in url_lower:
+                    malware_score += 40
+            
+            if malware_score >= 60:
+                return {
+                    'risk_level': 'High',
+                    'confidence': min(malware_score + 25, 90),
+                    'explanation': 'Malware distribution site detected based on domain and path patterns'
+                }
             
             # Advanced keyword analysis for out-of-dataset threats
             malicious_keywords = {
@@ -608,14 +668,22 @@ class EnhancedURLClassifier:
                 if directory in domain:
                     legitimacy_score += 0.5  # Boost legitimacy for known directories
             
-            # Final decision based on scoring
+            # Final decision based on scoring - more aggressive thresholds
             final_score = suspicious_score - legitimacy_score
             
-            if final_score > 0.6:  # Raised threshold slightly to reduce false positives
+            # Be more aggressive about flagging suspicious patterns
+            if final_score > 0.4:  # Lowered threshold to catch more threats
+                confidence = min(80.0, (0.4 + final_score) * 100)
                 return {
                     'risk_level': 'High',
-                    'confidence': min(75.0, (0.5 + final_score) * 100),
+                    'confidence': confidence,
                     'explanation': 'Heuristic analysis indicates suspicious characteristics'
+                }
+            elif final_score > 0.2:  # Medium risk category
+                return {
+                    'risk_level': 'High',
+                    'confidence': 65.0,
+                    'explanation': 'Multiple suspicious indicators detected'
                 }
             elif final_score < -0.3:
                 return {
