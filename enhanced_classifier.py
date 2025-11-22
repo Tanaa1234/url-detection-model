@@ -272,27 +272,27 @@ class EnhancedURLClassifier:
             # First check if it's a trusted domain (highest priority)
             if self.is_trusted_url(url):
                 return {
-                    'prediction': 'benign',
-                    'confidence': 0.95,
-                    'reason': 'Trusted domain override'
+                    'risk_level': 'Low',
+                    'confidence': 95.0,
+                    'explanation': 'Trusted domain override'
                 }
             
             # Advanced threat detection (high priority)
             is_threat, threat_reason, threat_confidence = self.detect_advanced_threats(url)
             if is_threat:
                 return {
-                    'prediction': 'phishing',
-                    'confidence': threat_confidence,
-                    'reason': threat_reason
+                    'risk_level': 'High',
+                    'confidence': threat_confidence * 100,
+                    'explanation': threat_reason
                 }
             
             # Check for legitimate patterns in non-trusted domains
             is_legit, legit_reason = self.is_legitimate_pattern(url)
             if is_legit:
                 return {
-                    'prediction': 'benign',
-                    'confidence': 0.85,
-                    'reason': f'Legitimate pattern: {legit_reason}'
+                    'risk_level': 'Low',
+                    'confidence': 85.0,
+                    'explanation': f'Legitimate pattern: {legit_reason}'
                 }
             
             # Enhanced malicious pattern detection
@@ -304,9 +304,9 @@ class EnhancedURLClassifier:
             import re
             if re.search(r'https?://\d+\.\d+\.\d+\.\d+', url):
                 return {
-                    'prediction': 'malware',
-                    'confidence': 0.90,
-                    'reason': 'Direct IP address URL (bypassing DNS)'
+                    'risk_level': 'High',
+                    'confidence': 90.0,
+                    'explanation': 'Direct IP address URL (bypassing DNS)'
                 }
             
             # Suspicious TLD check with expanded list
@@ -314,9 +314,9 @@ class EnhancedURLClassifier:
                               '.work', '.party', '.stream', '.racing', '.review', '.science']
             if any(tld in url_lower for tld in suspicious_tlds):
                 return {
-                    'prediction': 'phishing',
-                    'confidence': 0.80,
-                    'reason': 'High-risk TLD commonly used by threat actors'
+                    'risk_level': 'High',
+                    'confidence': 80.0,
+                    'explanation': 'High-risk TLD commonly used by threat actors'
                 }
             
             # Enhanced URL shortener detection
@@ -324,9 +324,9 @@ class EnhancedURLClassifier:
                          'tiny.cc/', 'rb.gy/', 'cutt.ly/', 'is.gd/', 'buff.ly/', 'lnkd.in/']
             if any(short in url_lower for short in shorteners):
                 return {
-                    'prediction': 'phishing',
-                    'confidence': 0.70,
-                    'reason': 'URL shortener (potential redirect to malicious content)'
+                    'risk_level': 'High',
+                    'confidence': 70.0,
+                    'explanation': 'URL shortener (potential redirect to malicious content)'
                 }
             
             # Suspicious URL structure patterns
@@ -340,9 +340,9 @@ class EnhancedURLClassifier:
             for pattern, reason in suspicious_patterns:
                 if pattern.search(url):
                     return {
-                        'prediction': 'phishing',
-                        'confidence': 0.75,
-                        'reason': f'Suspicious URL structure: {reason}'
+                        'risk_level': 'High',
+                        'confidence': 75.0,
+                        'explanation': f'Suspicious URL structure: {reason}'
                     }
             
             # Advanced keyword analysis for out-of-dataset threats
@@ -356,15 +356,15 @@ class EnhancedURLClassifier:
                 keyword_count = sum(1 for keyword in keywords if keyword in domain)
                 if keyword_count >= 2:  # Multiple suspicious keywords
                     return {
-                        'prediction': category,
-                        'confidence': 0.80,
-                        'reason': f'Multiple {category} keywords detected'
+                        'risk_level': 'High',
+                        'confidence': 80.0,
+                        'explanation': f'Multiple {category} keywords detected'
                     }
                 elif keyword_count == 1 and len(domain) < 15:  # Single keyword in short domain
                     return {
-                        'prediction': category,
-                        'confidence': 0.70,
-                        'reason': f'Suspicious {category} keyword pattern'
+                        'risk_level': 'High',
+                        'confidence': 70.0,
+                        'explanation': f'Suspicious {category} keyword pattern'
                     }
             
             # Try ML model if available (fallback for edge cases)
@@ -373,7 +373,7 @@ class EnhancedURLClassifier:
                 
             if self.model:
                 try:
-                    features = self.feature_extractor.transform_single_url(url)
+                    features = self.feature_extractor.extract_url_features([url])
                     pred = self.model.predict(features)[0]
                     pred_proba = self.model.predict_proba(features)[0]
                     class_name = self.feature_extractor.label_encoder.inverse_transform([pred])[0]
@@ -381,10 +381,11 @@ class EnhancedURLClassifier:
                     # For out-of-dataset URLs, be more conservative with ML predictions
                     ml_confidence = max(pred_proba)
                     if ml_confidence > 0.8:  # High confidence ML prediction
+                        risk_level = 'High' if class_name in ['phishing', 'malware', 'defacement'] else 'Low'
                         return {
-                            'prediction': class_name,
-                            'confidence': ml_confidence,
-                            'reason': 'High-confidence ML prediction'
+                            'risk_level': risk_level,
+                            'confidence': ml_confidence * 100,
+                            'explanation': 'High-confidence ML prediction'
                         }
                 except:
                     pass  # Fall through to enhanced heuristics
@@ -429,29 +430,29 @@ class EnhancedURLClassifier:
             
             if final_score > 0.5:
                 return {
-                    'prediction': 'phishing',
-                    'confidence': min(0.75, 0.5 + final_score),
-                    'reason': 'Heuristic analysis indicates suspicious characteristics'
+                    'risk_level': 'High',
+                    'confidence': min(75.0, (0.5 + final_score) * 100),
+                    'explanation': 'Heuristic analysis indicates suspicious characteristics'
                 }
             elif final_score < -0.3:
                 return {
-                    'prediction': 'benign',
-                    'confidence': min(0.80, 0.6 + abs(final_score)),
-                    'reason': 'Heuristic analysis indicates legitimate characteristics'
+                    'risk_level': 'Low',
+                    'confidence': min(80.0, (0.6 + abs(final_score)) * 100),
+                    'explanation': 'Heuristic analysis indicates legitimate characteristics'
                 }
             else:
                 # Neutral/unknown case - conservative approach
                 return {
-                    'prediction': 'benign',
-                    'confidence': 0.55,
-                    'reason': 'Insufficient indicators for threat classification'
+                    'risk_level': 'Low',
+                    'confidence': 55.0,
+                    'explanation': 'Insufficient indicators for threat classification'
                 }
                     
         except Exception as e:
             return {
-                'prediction': 'unknown',
+                'risk_level': 'Unknown',
                 'confidence': 0.0,
-                'reason': f'Analysis error: {str(e)}'
+                'explanation': f'Analysis error: {str(e)}'
             }
                 
     def _try_load_model(self):
@@ -465,13 +466,31 @@ class EnhancedURLClassifier:
         except Exception:
             pass
     
-    def load_model(self, models_dir='models'):
+    def load_model(self, model_path='enhanced_classifier.joblib'):
         """Load the trained model"""
         try:
-            self.model = joblib.load(f'{models_dir}/random_forest_model.joblib')
-            self.feature_extractor = joblib.load(f'{models_dir}/feature_extractor.joblib')
-            return True
-        except:
+            # If it's a specific file path, load it directly
+            if model_path.endswith('.joblib'):
+                loaded = joblib.load(model_path)
+                if isinstance(loaded, dict):
+                    # Enhanced classifier format
+                    if 'models' in loaded:
+                        self.models = loaded['models']
+                    if 'scalers' in loaded:
+                        self.scalers = loaded['scalers']
+                    if 'feature_extractor' in loaded:
+                        self.feature_extractor = loaded['feature_extractor']
+                else:
+                    # Single model format
+                    self.model = loaded
+                return True
+            else:
+                # Directory path - try to load individual files
+                self.model = joblib.load(f'{model_path}/random_forest_model.joblib')
+                self.feature_extractor = joblib.load(f'{model_path}/feature_extractor.joblib')
+                return True
+        except Exception as e:
+            print(f"Model loading error: {e}")
             return False
 
 def create_enhanced_classifier():
