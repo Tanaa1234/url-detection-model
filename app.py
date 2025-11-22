@@ -25,43 +25,65 @@ st.set_page_config(
 
 @st.cache_resource
 def load_trained_models():
-    """Load enhanced classifier"""
+    """Load enhanced classifier with robust error handling"""
     try:
-        # Try to load the enhanced classifier from root directory first
+        # Method 1: Try to load pre-trained enhanced classifier
         if os.path.exists('enhanced_classifier.joblib'):
-            enhanced = joblib.load('enhanced_classifier.joblib')
-            st.success("✅ Enhanced classifier loaded successfully from root directory!")
-            return enhanced
+            try:
+                enhanced = joblib.load('enhanced_classifier.joblib')
+                # Verify it has the predict_url method
+                if hasattr(enhanced, 'predict_url'):
+                    st.success("✅ Enhanced classifier loaded successfully from root directory!")
+                    return enhanced
+                else:
+                    st.warning("⚠️ Loaded classifier missing predict_url method, creating new one...")
+            except Exception as e:
+                st.warning(f"⚠️ Error loading enhanced_classifier.joblib: {e}")
         
-        # Try to load from models directory
+        # Method 2: Try to load from models directory
         elif os.path.exists('models/enhanced_classifier.joblib'):
-            enhanced = joblib.load('models/enhanced_classifier.joblib')
-            st.success("✅ Enhanced classifier loaded successfully from models directory!")
-            return enhanced
+            try:
+                enhanced = joblib.load('models/enhanced_classifier.joblib')
+                if hasattr(enhanced, 'predict_url'):
+                    st.success("✅ Enhanced classifier loaded successfully from models directory!")
+                    return enhanced
+            except Exception as e:
+                st.warning(f"⚠️ Error loading from models directory: {e}")
         
-        # If enhanced classifier doesn't exist, create one and load individual models
+        # Method 3: Create fresh Enhanced Classifier and load models
+        st.info("🔄 Creating fresh Enhanced Classifier...")
         classifier = EnhancedURLClassifier()
         
         # Load individual models into the enhanced classifier
         if classifier.load_model('models'):
-            st.success("Enhanced classifier created and loaded!")
-            return classifier
+            st.success("✅ Fresh Enhanced classifier created and loaded!")
+            # Verify it works with a test
+            try:
+                test_result = classifier.predict_url('google.com')
+                if test_result.get('prediction') == 'benign':
+                    st.success("✅ Enhanced classifier verified working!")
+                    return classifier
+                else:
+                    st.error(f"❌ Enhanced classifier test failed: {test_result}")
+            except Exception as e:
+                st.error(f"❌ Enhanced classifier test error: {e}")
         else:
-            st.warning("No trained models found. Please train models first.")
-            return None
+            st.error("❌ Failed to load models into Enhanced classifier")
             
-    except Exception as e:
-        st.error(f"Error loading enhanced classifier: {e}")
-        st.info("Falling back to original trainer...")
-        # Fallback to original trainer
+        # Method 4: Last resort fallback
+        st.warning("⚠️ Falling back to original trainer...")
         trainer = URLClassifierTrainer()
         if os.path.exists('models'):
             try:
                 trainer.load_models('models')
                 return trainer
             except Exception as e2:
-                st.error(f"Error loading fallback models: {e2}")
+                st.error(f"❌ Error loading fallback models: {e2}")
                 return None
+        return None
+            
+    except Exception as e:
+        st.error(f"❌ Critical error in model loading: {e}")
         return None
 
 @st.cache_resource 
@@ -92,6 +114,32 @@ def load_individual_models():
 
 def predict_with_selected_model(url, selected_model, trainer, models=None, scalers=None, feature_extractor=None):
     """Make prediction with the selected model"""
+    
+    # ALWAYS try Enhanced Classifier first if available, regardless of selected_model
+    # This ensures phishing detection works even if UI state is confused
+    if hasattr(trainer, 'predict_url'):
+        if selected_model == "Enhanced Classifier (Recommended)" or selected_model == "All Models (Ensemble)":
+            # User explicitly wants Enhanced Classifier
+            result = trainer.predict_url(url)
+            if st.session_state.get('debug_mode', False):
+                st.write(f"🔍 Debug: Enhanced classifier returned: {result}")
+                st.write(f"🔍 Debug: Trainer type: {type(trainer)}")
+            return {"Enhanced Classifier": result}
+        
+        elif selected_model in ["Random Forest", "XGBoost", "K-Nearest Neighbors (KNN)", "Support Vector Machine (SVM)"]:
+            # User wants individual model, but check Enhanced Classifier for overrides first
+            try:
+                enhanced_result = trainer.predict_url(url)
+                # If Enhanced Classifier has a strong rule-based reason (not just ML prediction), use it
+                if enhanced_result.get('reason', '').lower() not in ['ml model prediction', 'machine learning prediction']:
+                    # Show override message
+                    if st.session_state.get('debug_mode', False):
+                        st.write(f"🔍 Debug: Enhanced classifier override: {enhanced_result}")
+                    st.info(f"🛡️ **Enhanced Classifier Override**: Using rule-based detection instead of {selected_model}")
+                    return {"Enhanced Classifier (Override)": enhanced_result}
+            except Exception as e:
+                if st.session_state.get('debug_mode', False):
+                    st.write(f"🔍 Debug: Enhanced classifier check failed: {e}")
     
     if selected_model == "Enhanced Classifier (Recommended)":
         # Use enhanced classifier
@@ -337,6 +385,23 @@ def main():
     st.sidebar.title("🔧 Debug")
     debug_mode = st.sidebar.checkbox("Enable Debug Mode", help="Shows detailed prediction information")
     
+    # System diagnostics
+    if st.sidebar.button("🔍 System Diagnostics"):
+        st.sidebar.write("**System Status:**")
+        st.sidebar.write(f"✅ Enhanced Classifier Available: {hasattr(trainer, 'predict_url') if trainer else 'No trainer'}")
+        st.sidebar.write(f"✅ Trainer Type: {type(trainer) if trainer else 'None'}")
+        if os.path.exists('enhanced_classifier.joblib'):
+            st.sidebar.write("✅ enhanced_classifier.joblib exists")
+        if os.path.exists('models/enhanced_classifier.joblib'):  
+            st.sidebar.write("✅ models/enhanced_classifier.joblib exists")
+        st.sidebar.write(f"✅ Models directory exists: {os.path.exists('models')}")
+        if trainer and hasattr(trainer, 'predict_url'):
+            try:
+                test_result = trainer.predict_url('google.com')
+                st.sidebar.write(f"✅ Test prediction: {test_result}")
+            except Exception as e:
+                st.sidebar.write(f"❌ Test prediction failed: {e}")
+    
     # Model Selection
     st.sidebar.title("🤖 Model Selection")
     selected_model = st.sidebar.selectbox(
@@ -351,6 +416,13 @@ def main():
         ],
         index=0,  # Explicitly set Enhanced Classifier as default
         help="Enhanced Classifier uses ML + rule-based overrides for best accuracy"
+    )
+    
+    # Force Enhanced Classifier option for troubleshooting
+    force_enhanced = st.sidebar.checkbox(
+        "🔒 Force Enhanced Classifier", 
+        value=True,
+        help="Always use Enhanced Classifier regardless of selection above (recommended for phishing detection)"
     )
     
     # Load models
@@ -383,10 +455,17 @@ def main():
                         # Load individual models if needed
                         individual_models, scalers, feature_extractor = load_individual_models()
                         
+                        # Force Enhanced Classifier if option is checked
+                        if force_enhanced and hasattr(trainer, 'predict_url'):
+                            st.info("🔒 **Force Enhanced Classifier**: Using Enhanced Classifier (overriding model selection)")
+                            actual_model = "Enhanced Classifier (Recommended)"
+                        else:
+                            actual_model = selected_model
+                        
                         # Make predictions using selected model
                         predictions = predict_with_selected_model(
                             url_input.strip(), 
-                            selected_model, 
+                            actual_model, 
                             trainer, 
                             individual_models, 
                             scalers, 
