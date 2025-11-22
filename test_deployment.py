@@ -62,8 +62,10 @@ def manual_deployment_test_instructions():
     print("\n1. Open your Streamlit Cloud app:")
     print("   https://url-detection-model-tanaa1234.streamlit.app/")
     
-    print("\n2. Check that 'Enhanced Classifier (Recommended)' is selected in sidebar")
-    print("   - It should show '🛡️ Active Model: Enhanced Classifier (Recommended)' at top")
+    print("\n2. NEW FEATURES TO CHECK:")
+    print("   ✅ '🔒 Force Enhanced Classifier' should be checked by default")
+    print("   ✅ Look for '🛡️ Active Model: Enhanced Classifier (Recommended)' at top") 
+    print("   ✅ Click '🔍 System Diagnostics' button to verify Enhanced Classifier loaded")
     
     print("\n3. Test these PHISHING URLs (should show HIGH RISK/RED):")
     for url in PHISHING_TEST_URLS:
@@ -73,12 +75,16 @@ def manual_deployment_test_instructions():
     for url in SAFE_TEST_URLS:
         print(f"   ✅ Test: {url}")
     
-    print("\n5. Enable 'Debug Mode' in sidebar to see detailed predictions")
+    print("\n5. TROUBLESHOOTING:")
+    print("   ✅ Enable 'Debug Mode' in sidebar to see detailed predictions")
+    print("   ✅ Click 'System Diagnostics' to check Enhanced Classifier status")
+    print("   ✅ Ensure '🔒 Force Enhanced Classifier' is checked")
+    print("   ✅ Look for override messages like 'Enhanced Classifier Override'")
     
-    print("\n6. If phishing URLs show LOW RISK:")
-    print("   - Check if Enhanced Classifier is selected (not Random Forest, etc.)")
-    print("   - Look at debug output to see which model is being used")
-    print("   - Try refreshing the page to clear Streamlit cache")
+    print("\n6. If phishing URLs STILL show LOW RISK:")
+    print("   ❌ This indicates a deeper issue with model file loading on Streamlit Cloud")
+    print("   ❌ Check the System Diagnostics output for error messages")
+    print("   ❌ Try refreshing the page completely (Ctrl+F5)")
 
 if __name__ == "__main__":
     print("🔍 URL Detection Model - Deployment Test")
