@@ -1,0 +1,137 @@
+url,expected,predicted,predicted_risk,confidence,correct,explanation
+br-icloud.com.br,phishing,phishing,High,95.0,True,"Likely defaced website - High-risk country domain: .br, High-risk country domain: .co"
+mp3raid.com/music/krizz_kaliko.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+bopsecrets.org/rexroth/cr/1.htm,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.garage-pirenne.be/index.php?option=com_content&view=article&id=70&vsig70_0=15,defacement,defacement,High,95.0,True,"Likely defaced website - High-risk country domain: .be, Country domain with web script patterns, CMS vulnerability patterns (1 matches)"
+http://adventure-nicaragua.net/index.php?option=com_mailto&tmpl=component&link=aHR0cDovL2FkdmVudHVyZQ...,defacement,defacement,High,70.0,True,Suspicious characteristics with limited legitimacy signals
+http://buzzfil.net/m/show-art/ils-etaient-loin-de-s-imaginer-que-le-hibou-allait-faire-ceci-quand-il...,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+espn.go.com/nba/player/_/id/3457/brandon-rush,benign,benign,Low,60.0,True,No strong threat indicators detected
+yourbittorrent.com/?q=anthony-hamilton-soulife,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.pashminaonline.com/pure-pashminas,defacement,defacement,High,95.0,True,"Likely defaced website - Product Paths patterns, High-risk country domain: .co"
+allmusic.com/album/crazy-from-the-heat-r16990,benign,benign,Low,60.0,True,No strong threat indicators detected
+corporationwiki.com/Ohio/Columbus/frank-s-benson-P3333917.aspx,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+http://www.ikenmijnkunst.nl/index.php/exposities/exposities-2006,defacement,defacement,High,95.0,True,"Likely defaced website - Dutch content patterns (2 matches), High-risk country domain: .nl, Country domain with web script patterns"
+myspace.com/video/vid/30602581,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.lebensmittel-ueberwachung.de/index.php/aktuelles.1,defacement,defacement,High,95.0,True,"Likely defaced website - German content patterns (3 matches), High-risk country domain: .de, Country domain with web script patterns"
+http://www.szabadmunkaero.hu/cimoldal.html?start=12,defacement,defacement,High,95.0,True,"Likely defaced website - Hungarian content patterns (3 matches), High-risk country domain: .hu, Country domain with web script patterns"
+http://larcadelcarnevale.com/catalogo/palloncini,defacement,defacement,High,95.0,True,"Likely defaced website - Italian content patterns (3 matches), High-risk country domain: .co"
+quickfacts.census.gov/qfd/maps/iowa_map.html,benign,benign,Low,95.0,True,Trusted domain: Government/educational domain
+nugget.ca/ArticleDisplay.aspx?archive=true&e=1160966,benign,benign,Low,60.0,True,No strong threat indicators detected
+uk.linkedin.com/pub/steve-rubenstein/8/718/755,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+http://www.vnic.co/khach-hang.html,defacement,defacement,High,95.0,True,"Likely defaced website - Vietnamese content patterns (2 matches), High-risk country domain: .co"
+baseball-reference.com/players/h/harrige01.shtml,benign,benign,Low,60.0,True,No strong threat indicators detected
+signin.eby.de.zukruygxctzmmqi.civpro.co.za,phishing,phishing,High,95.0,True,"Likely phishing - Suspicious auth subdomain: signin.eby.de.zukruygxctzmmqi, Suspicious long subdomain: signin.eby.de.zukruygxctzmmqi"
+192.com/atoz/people/oakley/patrick/,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+nytimes.com/1998/03/29/style/cuttings-oh-that-brazen-raucous-glorious-hibiscus.html,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+escholarship.org/uc/item/5xt4952c,benign,benign,Low,60.0,True,No strong threat indicators detected
+songfacts.com/detail.php?id=13410,benign,benign,Low,60.0,True,No strong threat indicators detected
+casamanana.org/education/blba/,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://hollywoodlife.com/2014/05/01/rihanna-iheartradio-music-awards-dress-2014-pics/,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+http://www.marketingbyinternet.com/mo/e56508df639f6ce7d55c81ee3fcd5ba8/,phishing,phishing,High,95.0,True,"Likely malware - Long hexadecimal string in URL, URL shortener (potential redirect)"
+en.wikipedia.org/wiki/North_Dakota,benign,benign,Low,60.0,True,No strong threat indicators detected
+soaps.sheknows.com/daysofourlives/news/id/20259/Days_Of_Our_Lives_Casts_Ruta_Lee/,benign,benign,Low,60.0,True,No strong threat indicators detected
+perfectpeople.net/celebrity-star/6920/gidget-gein.htm,benign,benign,Low,60.0,True,No strong threat indicators detected
+media.caltech.edu/press_releases/13186,benign,benign,Low,95.0,True,Trusted domain: Government/educational domain
+wikiobits.com/Obits/TonyProudfoot,benign,benign,Low,60.0,True,No strong threat indicators detected
+vanderbilt.rivals.com/viewcoach.asp?coach=2079&sport=1&year=2011,benign,benign,Low,90.0,True,Strong legitimate business indicators detected
+http://peluqueriadeautor.com/index.php?option=com_virtuemart&page=shop.browse&category_id=31&Itemid=...,defacement,defacement,High,95.0,True,"Likely defaced website - High-risk country domain: .co, CMS vulnerability patterns (1 matches)"
+movies.yahoo.com/shop?d=hv&cf=info&id=1800340831,benign,benign,Low,60.0,True,No strong threat indicators detected
+cyndislist.com/us/pa/counties,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.824555.com/app/member/SportOption.php?uid=guest&langx=gb,malware,malware,High,95.0,True,Likely malware - Numeric domain pattern
+http://www.raci.it/component/user/reset.html,defacement,defacement,High,95.0,True,"Likely defaced website - High-risk country domain: .it, Country domain with web script patterns, CMS vulnerability patterns (2 matches)"
+https://docs.google.com/spreadsheet/viewform?formkey=dGg2Z1lCUHlSdjllTVNRUW50TFIzSkE6MQ,phishing,benign,Low,95.0,False,Trusted domain: Trusted domain
+psychology.wikia.com/wiki/Phonemes,benign,benign,Low,60.0,True,No strong threat indicators detected
+info.centriq.com/content/fivereasons,benign,benign,Low,60.0,True,No strong threat indicators detected
+articles.baltimoresun.com/1991-06-11/sports/1991162162_1_james-koehler-texas-rangers-terrell-lowery,benign,benign,Low,60.0,True,No strong threat indicators detected
+infinitysw.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+strawberrycreekgardens.com/,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+http://earth-sure.com/industrial-tech/everlast-impact-resistant-dumpster-enclosure,defacement,defacement,High,95.0,True,"Likely defaced website - Product Paths patterns, High-risk country domain: .co"
+spoke.com/dir/p/desantis/nick,benign,benign,Low,60.0,True,No strong threat indicators detected
+wordsmith.org/words/pignus.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://interpark.com/displaycorner/FreeMarket.do?_method=itemCateList&free1=pc&free2=007001008003&fr...,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+http://www.newtec.ac.uk/courses/health-and-social-care/level-2-diploma-in-health-a-social-care-.html,defacement,defacement,High,85.0,True,Multiple suspicious URL characteristics detected
+http://www.kingsmillshotel.com/spring/mothers-day,defacement,defacement,High,95.0,True,"Likely defaced website - Seasonal Paths patterns, High-risk country domain: .co"
+almanac.logos.com/Denominations,benign,benign,Low,60.0,True,No strong threat indicators detected
+gaming.wikia.com/wiki/Backbreaker_(video_game),benign,benign,Low,60.0,True,No strong threat indicators detected
+ceu.hu/,benign,benign,Low,60.0,True,No strong threat indicators detected
+registry.weddingchannel.com/coupledir/20108/C/R314763282/JARED_CLOUGH_AND_TAJAI_RITCHIE.htm,benign,benign,Low,60.0,True,No strong threat indicators detected
+linkedin.com/pub/george-cleveland/7/80a/599,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+sunshinemills.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+agoda.com/north_america/canada/montreal_qc/attractions/hotels_near_mcgill_university_centre_for_cont...,benign,benign,Low,60.0,True,No strong threat indicators detected
+ctv.ca/generic/WebSpecials/sponsorship_scandal/,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.approvi.com.br/ck.htm,defacement,defacement,High,95.0,True,"Likely defaced website - Portuguese content patterns (1 matches), Suspicious Files patterns, High-risk country domain: .br"
+http://www.shaborooz.ir/index.php?view=article&catid=7:1390-01-27-09-09-55&id=23:1390-04-12-08-07-33...,defacement,defacement,High,95.0,True,"Likely defaced website - High-risk country domain: .ir, CMS vulnerability patterns (1 matches)"
+veoox.com/tags/game.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+chuckwalkertrio.blogspot.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+aerosolesshoes.org/,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.juventudelirica.com.br/index.html,defacement,defacement,High,95.0,True,"Likely defaced website - Spanish content patterns (1 matches), Suspicious Files patterns, High-risk country domain: .br"
+http://www.myenrg.com/southwest/9-texas,defacement,defacement,High,95.0,True,"Likely defaced website - Generic Defaced patterns, High-risk country domain: .co"
+recipelink.com/msgbrd/board_14/2007/DEC/29094.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.musimagen.com/lista_socios.php?letra=Ã¹,defacement,defacement,High,95.0,True,"Likely defaced website - Spanish content patterns (1 matches), High-risk country domain: .co"
+ideas.repec.org/f/pma235.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+peopleaz.org/firstname/Fowlkes/6,benign,benign,Low,60.0,True,No strong threat indicators detected
+orensamtraktrip.wordpress.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+retajconsultancy.com,phishing,benign,Low,60.0,False,No strong threat indicators detected
+alexa.com/whatshot?q=james+arness,benign,benign,Low,60.0,True,No strong threat indicators detected
+jpopasia.com/group/arashi/discography/,benign,benign,Low,60.0,True,No strong threat indicators detected
+kitsapsun.com/photos/2011/feb/25/177999/,benign,benign,Low,60.0,True,No strong threat indicators detected
+local.yahoo.com/info-42862457-oakland-international-airport-oakland,benign,benign,Low,60.0,True,No strong threat indicators detected
+tripadvisor.com/Restaurant_Review-g680765-d1768647-Reviews-Yacha_Yacha-Miyakojima_Okinawa_Prefecture...,benign,benign,Low,60.0,True,No strong threat indicators detected
+articles.elitefts.com/articles/300242-doug-harvey-one-of-the-best-ever-to-play-the-game,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+broadwaystars.com/classic/?source=www.playbill.com,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+http://paoarapanui.cl/index.php?option=com_contact&view=contact&id=1&Itemid=6,defacement,defacement,High,95.0,True,"Likely defaced website - Dutch content patterns (1 matches), CMS vulnerability patterns (1 matches)"
+worldwrestlinginsanity.com/am2/publish/ringofhonorlive/roh_sinclair_tv2.shtml,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+http://www.designeremdoces.com/components/com_contact/ggdrives/,phishing,phishing,High,95.0,True,"Likely defaced website - Dutch content patterns (1 matches), High-risk country domain: .co"
+http://slashdot.org/submission/2916707/facebook-to-include-profile-photos-in-its-facial-recognition-...,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+facebook.com/people/Yui-Takeshita/100001611015714,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+sportsposterwarehouse.com/items_388__grandprixclassicscoll.html,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+padmapper.com/search/apartments/Quebec/Montreal-est/,benign,benign,Low,60.0,True,No strong threat indicators detected
+mrskin.com/christina-ricci-nude-c868.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+lip-service.com/webzine/tag/post-apocalyptic-fashion/,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.paoarapanui.cl/index.php?option=com_contact&view=contact&id=1&Itemid=6,defacement,defacement,High,95.0,True,"Likely defaced website - Dutch content patterns (1 matches), CMS vulnerability patterns (1 matches)"
+http://9779.info/%E5%84%BF%E7%AB%A5%E7%AB%8B%E8%BA%AB%E7%BA%B8%E8%B4%B4%E7%94%BB/,malware,malware,High,85.0,True,Multiple suspicious URL characteristics detected
+newjersey.craigslist.org/,benign,benign,Low,60.0,True,No strong threat indicators detected
+roverslands.net,phishing,benign,Low,60.0,False,No strong threat indicators detected
+familypedia.wikia.com/wiki/Joseph_Philippe_Roi_de_Villere_%281727-1769%29,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://mylust.com/videos/232790/hentai-slut-with-big-juicy-tits-gets-fucked-doggy-style/,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+acronymfinder.com/John-Burroughs-High-school-(Burbank%2c-CA)-(JBHS).html,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.familienbund.org/index.php?option=com_content&view=article&id=291:stellungnahme-des-famil...,defacement,defacement,High,85.0,True,Multiple suspicious URL characteristics detected
+http://www.vanoorschotkranen.nl/hoogwerker/hoogwerkers.pdf,defacement,defacement,High,95.0,True,"Likely defaced website - Dutch content patterns (3 matches), Suspicious Files patterns, High-risk country domain: .nl"
+youtube.com/watch?v=mwpoPQ1SPJU,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+mccall-idchamber.org/,benign,benign,Low,60.0,True,No strong threat indicators detected
+chacha.com/question/who-said-the-quote-%27say-what-you-mean%2C-mean-what-you-say-and-put-a-beat-to-i...,benign,benign,Low,60.0,True,No strong threat indicators detected
+friars.com/sports/m-baskbl/archive/prov-m-baskbl-2003.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://asociacionkaribu.org/index.php/servicios/centro-jambo,defacement,defacement,High,95.0,True,"Likely defaced website - Spanish content patterns (1 matches), Generic Defaced patterns"
+http://www.martin-busker.de/administrator/help/en-GB/css/Facture/c4d12146ebce8e1684d3542308399779/8f...,phishing,phishing,High,95.0,True,"Likely defaced website - High-risk country domain: .de, CMS vulnerability patterns (1 matches)"
+pipl.com/directory/name/Whissell/180,benign,benign,Low,60.0,True,No strong threat indicators detected
+spokeo.com/John+Collet,benign,benign,Low,90.0,True,Strong legitimate business indicators detected
+http://www.parafiapiaski.pl/index.php?option=com_user&view=remind,defacement,defacement,High,85.0,True,Multiple suspicious URL characteristics detected
+http://fanpage.gr/family/gineka/%ce%b1%cf%85%cf%84%ce%bf%ce%af-%ce%b5%ce%af%ce%bd%ce%b1%ce%b9-%ce%bf...,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+faqs.org/copyright/handbook-for-the-individual-or-group-culture-free/,benign,benign,Low,60.0,True,No strong threat indicators detected
+duckduckgo.com/1/c/Roman_Catholic_cathedrals_in_Canada,benign,benign,Low,60.0,True,No strong threat indicators detected
+alexpay2.beget.tech,phishing,phishing,High,95.0,True,Likely phishing - High-risk hosting provider: beget.tech
+http://worldoftanks.ru/ru/content/guide/payments_instruction/mobile-payments-rostelekom-ural-utel/,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+http://www.artedesignsas.it/catalogo.html?page=shop.browse&category_id=14,defacement,defacement,High,95.0,True,"Likely defaced website - Italian content patterns (1 matches), High-risk country domain: .it, Country domain with web script patterns"
+en.wikipedia.org/wiki/Lloyd_Bacon,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://serverfault.com/questions/682832/squid-transparent-https-certificate-error-ssl-error-bad-cert...,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+http://www.viamanaus.com.br/index.php?option=com_wrapper&view=wrapper&Itemid=297,defacement,defacement,High,95.0,True,"Likely defaced website - Portuguese content patterns (1 matches), High-risk country domain: .br, High-risk country domain: .co"
+ciajfk.com/harold.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.protect-effect.nl/diensten/62-telefonie,defacement,defacement,High,95.0,True,"Likely defaced website - Dutch content patterns (1 matches), German content patterns (1 matches), High-risk country domain: .nl"
+indyweek.com/artery/archives/2011/10/07/come-back-to-the-1980s-at-the-escapism-film-festival-which-b...,benign,benign,Low,60.0,True,No strong threat indicators detected
+linkedin.com/pub/charles-gariepy/2/642/28,benign,benign,Low,95.0,True,Trusted domain: Trusted domain
+http://www.gst-ukraine.com.ua/ukraine/tours/2754-arboretum-alexandria-sofiyivka,benign,phishing,High,85.0,False,Multiple suspicious URL characteristics detected
+facebook.unitedcolleges.net,phishing,phishing,High,95.0,True,Likely phishing - High-risk hosting provider: unitedcolleges.net
+http://www.bimabn.com/1-configurazione-supporto-apple.store-contatta/c/Apple-id/3d465e25b47e6bc23ae5...,phishing,phishing,High,95.0,True,Likely malware - Long hexadecimal string in URL
+eyeappealoptometry.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+brophygen.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+icehockey.wikia.com/wiki/Dan_Blackburn,benign,benign,Low,60.0,True,No strong threat indicators detected
+gurufocus.com/news/116068/who-is-the-warren-buffett-of-canada-prem-watsa-of-fairfax-financial-ffh-or...,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.bg-ricevimenti.it/index.php/location/osteria-del-molo.html?fontstyle=f-smaller,defacement,defacement,High,95.0,True,"Likely defaced website - Italian content patterns (2 matches), High-risk country domain: .it, Country domain with web script patterns"
+stewstew.com/,benign,benign,Low,60.0,True,No strong threat indicators detected
+livingharvest.com/products/ice-cream-bars,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://icicibank.com/Personal-Banking/offers/offer-detail.page?id=offer-readers-digest-magazine-offe...,benign,phishing,High,70.0,False,Suspicious characteristics with limited legitimacy signals
+http://9779.info/%E5%84%BF%E7%AB%A5%E7%AB%8B%E8%BA%AB%E7%BA%B8%E8%B4%B4%E7%94%BB/,malware,malware,High,85.0,True,Multiple suspicious URL characteristics detected
+bleacherreport.com/articles/300242-doug-harvey-one-of-the-best-ever-to-play-the-game,benign,benign,Low,60.0,True,No strong threat indicators detected
+http://www.boeuf-soufflenheim.com/de.feed?type=rss,defacement,defacement,High,95.0,True,"Likely defaced website - Suspicious Files patterns, High-risk country domain: .co"
+artfacts.net/it/istituzion/ms--muzeum-sztuki-lodz-2724/visione-generale.html,benign,benign,Low,60.0,True,No strong threat indicators detected
+parsippanysoccerclub.org/,benign,benign,Low,60.0,True,No strong threat indicators detected
