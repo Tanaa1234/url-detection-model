@@ -197,6 +197,54 @@ class EnhancedURLClassifier:
             for legit_domain, typos in typosquatting_patterns.items():
                 if domain in typos:
                     return True, f"Typosquatting of {legit_domain}", 0.95
+            
+            # Enhanced phishing pattern detection
+            url_lower = url.lower()
+            
+            # Suspicious marketing/spam patterns
+            marketing_spam_indicators = [
+                '/mo/',  # Marketing offer path
+                '/click',
+                '/track',
+                '/redirect',
+                '/offer',
+                '/promo',
+                '/campaign',
+                '/affiliate',
+                '/ref=',
+                '/campaign_id=',
+                '/click_id=',
+                '/tracking='
+            ]
+            
+            suspicious_path_count = sum(1 for indicator in marketing_spam_indicators if indicator in url_lower)
+            if suspicious_path_count >= 1:
+                # Check for additional suspicious characteristics
+                has_long_hash = any(len(part) > 20 and all(c in '0123456789abcdef' for c in part) 
+                                  for part in url.split('/'))
+                has_suspicious_domain = any(word in domain for word in ['marketing', 'promo', 'offer', 'deal', 'sale'])
+                
+                if has_long_hash or has_suspicious_domain or suspicious_path_count >= 2:
+                    return True, "Suspicious marketing/phishing URL with tracking parameters", 0.85
+            
+            # Long hexadecimal strings in URL (common in phishing)
+            import re
+            hex_pattern = re.compile(r'[0-9a-f]{20,}')
+            if hex_pattern.search(url_lower):
+                return True, "Long hexadecimal string in URL (possible phishing token)", 0.80
+            
+            # Suspicious domain + path combinations
+            suspicious_combinations = [
+                ('marketing', '/mo/'),
+                ('promo', '/click'),
+                ('offer', '/track'),
+                ('deal', '/redirect'),
+                ('sale', '/campaign')
+            ]
+            
+            for domain_word, path_word in suspicious_combinations:
+                if domain_word in domain and path_word in url_lower:
+                    return True, f"Suspicious {domain_word} domain with {path_word} tracking path", 0.83
                     
             # Advanced character substitution detection
             suspicious_substitutions = {
