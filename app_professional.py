@@ -268,7 +268,8 @@ def generate_model_specific_prediction(url, model_name, classifier, analysis_dep
     
     # Enhanced model-specific detection logic
     url_lower = url.lower()
-    parsed_url = __import__('urllib.parse').urlparse(url)
+    from urllib.parse import urlparse
+    parsed_url = urlparse(url)
     domain = parsed_url.netloc.lower()
     path = parsed_url.path.lower()
     
